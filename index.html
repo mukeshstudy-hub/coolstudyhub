@@ -1,105 +1,199 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoolStudyHub Pro</title><style>
-body { margin:0; font-family:'Segoe UI'; background:#0f0f0f; color:white; }
-header { text-align:center; padding:20px; font-size:28px; color:#7a6cff; }
-.container { max-width:900px; margin:auto; padding:20px; }
-.card { background:#1a1a1a; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 0 10px rgba(122,108,255,0.2);} 
-input { padding:10px; width:50%; border-radius:6px; border:none; }
-button { padding:10px; margin:5px; border:none; border-radius:6px; background:#7a6cff; color:white; cursor:pointer; }
-li { display:flex; justify-content:space-between; background:#262626; margin-top:10px; padding:10px; border-radius:6px; }
-.progress-bar { width:100%; height:20px; background:#333; border-radius:10px; overflow:hidden; }
-.fill { height:100%; width:0%; background:linear-gradient(90deg,#7a6cff,#00c6ff);} 
-.status { margin-left:10px; }
-</style></head><body>
-<header>CoolStudyHub Pro 🚀</header><div class="container"><div class="card">
-<h2>🎯 Today's Focus</h2>
-<p id="date"></p>
-</div><div class="card">
-<h2>📋 Study Planner</h2>
-<input id="task" placeholder="Task">
-<input id="subject" placeholder="Subject">
-<input id="time" placeholder="Hours">
-<button onclick="addTask()">Add</button>
-<ul id="list"></ul>
-</div><div class="card">
-<h2>📊 Progress</h2>
-<div class="progress-bar"><div id="bar" class="fill"></div></div>
-<p id="percent">0%</p>
-</div><div class="card">
-<h2>🧠 Analysis</h2>
-<p id="analysis"></p>
-</div><div class="card">
-<h2>🔥 Streak</h2>
-<p id="streak">0 Days</p>
-</div></div><script>
-let data = JSON.parse(localStorage.getItem("data")) || [];
-let completed = JSON.parse(localStorage.getItem("completed")) || 0;
-let streak = JSON.parse(localStorage.getItem("streak")) || 0;
+<title>CoolStudyHub Ultra</title>
 
-function save(){
- localStorage.setItem("data", JSON.stringify(data));
- localStorage.setItem("completed", completed);
- localStorage.setItem("streak", streak);
+<style>
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0f0f0f,#1a1a2e);
+  color:white;
+  transition:0.3s;
 }
 
-function addTask(){
- let t=document.getElementById("task").value;
- let s=document.getElementById("subject").value;
- let time=document.getElementById("time").value;
- if(!t||!s||!time) return;
- data.push({t,s,time,status:"pending"});
- save(); render();
+.light {
+  background:#f5f5f5;
+  color:black;
 }
 
-function completeTask(i){
- data[i].status="done";
- completed++; streak++;
- save(); render();
+.sidebar {
+  width:200px;
+  position:fixed;
+  height:100%;
+  background:#111;
+  padding:20px;
+}
+
+.sidebar button {
+  display:block;
+  width:100%;
+  margin:10px 0;
+  background:none;
+  border:none;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.main {
+  margin-left:220px;
+  padding:20px;
+}
+
+.card {
+  background:rgba(255,255,255,0.05);
+  padding:20px;
+  border-radius:12px;
+  margin:10px 0;
+  backdrop-filter:blur(10px);
+}
+
+button.mainbtn {
+  background:#7a6cff;
+  border:none;
+  padding:10px;
+  border-radius:6px;
+  color:white;
+  cursor:pointer;
+}
+
+.progress {
+  height:20px;
+  background:#333;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.fill {
+  height:100%;
+  background:#7a6cff;
+  width:0%;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>CoolStudyHub</h2>
+  <button onclick="show('home')">Home</button>
+  <button onclick="show('planner')">Planner</button>
+  <button onclick="show('analysis')">Analysis</button>
+  <button onclick="toggleMode()">🌙 / ☀ Mode</button>
+</div>
+
+<div class="main">
+
+<div id="home" class="section">
+  <div class="card">
+    <h2>Dashboard</h2>
+    <p id="stats"></p>
+  </div>
+
+  <div class="card">
+    <h2>⏱️ Timer</h2>
+    <button class="mainbtn" onclick="start()">Start</button>
+    <button class="mainbtn" onclick="stop()">Stop</button>
+    <h1 id="timer">0</h1>
+  </div>
+
+  <div class="card">
+    <h2>Progress</h2>
+    <div class="progress"><div id="bar" class="fill"></div></div>
+  </div>
+</div>
+
+<div id="planner" class="section" style="display:none;">
+  <div class="card">
+    <input id="task" placeholder="Task">
+    <input id="subject" placeholder="Subject">
+    <button class="mainbtn" onclick="add()">Add</button>
+    <ul id="list"></ul>
+  </div>
+</div>
+
+<div id="analysis" class="section" style="display:none;">
+  <div class="card">
+    <h2>Analysis</h2>
+    <p id="analysisText"></p>
+  </div>
+</div>
+
+</div>
+
+<script>
+let sections=document.querySelectorAll('.section');
+function show(id){
+ sections.forEach(s=>s.style.display='none');
+ document.getElementById(id).style.display='block';
+}
+
+/* Mode */
+function toggleMode(){
+ document.body.classList.toggle('light');
+}
+
+/* Task */
+let data=JSON.parse(localStorage.getItem('data'))||[];
+function add(){
+ let t=document.getElementById('task').value;
+ let s=document.getElementById('subject').value;
+ data.push({t,s,done:false});
+ localStorage.setItem('data',JSON.stringify(data));
+ render();
 }
 
 function render(){
- let list=document.getElementById("list"); list.innerHTML="";
- let totalTime=0, subjectMap={};
+ let list=document.getElementById('list');
+ list.innerHTML='';
+ let done=0;
+ let subject={};
 
  data.forEach((d,i)=>{
-   totalTime+=Number(d.time);
-   subjectMap[d.s]=(subjectMap[d.s]||0)+Number(d.time);
+  subject[d.s]=(subject[d.s]||0)+1;
+  if(d.done) done++;
 
-   let li=document.createElement("li");
-   li.innerHTML=`
-   <span>${d.t} (${d.s} - ${d.time}h)</span>
-   <div>
-   <button onclick="completeTask(${i})">✔</button>
-   <span class='status'>${d.status}</span>
-   </div>`;
-   list.appendChild(li);
+  let li=document.createElement('li');
+  li.innerHTML=`${d.t} (${d.s})
+  <button onclick="complete(${i})">✔</button>`;
+  list.appendChild(li);
  });
 
- let percent = data.length? Math.round((completed/data.length)*100):0;
- document.getElementById("bar").style.width=percent+"%";
- document.getElementById("percent").innerText=percent+"%";
+ let percent=data.length? (done/data.length)*100:0;
+ document.getElementById('bar').style.width=percent+'%';
+ document.getElementById('stats').innerText=
+ `Tasks: ${data.length} | Completed: ${done}`;
 
- // analysis
- let weak="", strong="";
- let entries=Object.entries(subjectMap);
+ let entries=Object.entries(subject);
  if(entries.length){
-   entries.sort((a,b)=>a[1]-b[1]);
-   weak=entries[0][0];
-   strong=entries[entries.length-1][0];
+  entries.sort((a,b)=>a[1]-b[1]);
+  document.getElementById('analysisText').innerText=
+  `Weak: ${entries[0][0]} | Strong: ${entries[entries.length-1][0]}`;
  }
- document.getElementById("analysis").innerText=
- `Total Study: ${totalTime} hrs | Weak: ${weak} | Strong: ${strong}`;
-
- document.getElementById("streak").innerText=streak+" Days";
 }
 
-function setDate(){
- document.getElementById("date").innerText=new Date().toDateString();
+function complete(i){
+ data[i].done=true;
+ localStorage.setItem('data',JSON.stringify(data));
+ render();
 }
 
-setDate(); render();
-</script></body>
+/* Timer */
+let time=0, interval;
+function start(){
+ interval=setInterval(()=>{
+  time++;
+  document.getElementById('timer').innerText=time;
+ },1000);
+}
+function stop(){ clearInterval(interval); }
+
+render();
+</script>
+
+</body>
 </html>
