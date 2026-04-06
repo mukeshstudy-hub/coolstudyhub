@@ -3,69 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoolStudyHub Pro v2</title>
+<title>CoolStudyHub Pro v3 🚀</title>
 <style>
-body { margin:0; font-family:'Segoe UI'; background:#0f0f0f; color:white; transition:0.3s; }
-body.light { background:#f5f5f5; color:black; }
+/* Base */
+body { margin:0; font-family:'Segoe UI', sans-serif; background:#0f0f0f; color:white; transition:0.3s; }
+body.light { background:#f5f5f5; color:#000; }
 header { text-align:center; padding:20px; font-size:28px; color:#7a6cff; }
-.container { max-width:900px; margin:auto; padding:20px; }
-.card { background:#1a1a1a; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 0 10px rgba(122,108,255,0.2); }
-body.light .card { background:#fff; color:#000; box-shadow:0 0 10px rgba(122,108,255,0.2); }
-input { padding:10px; width:30%; border-radius:6px; border:none; margin:5px 0; }
-button { padding:10px; margin:5px; border:none; border-radius:6px; background:#7a6cff; color:white; cursor:pointer; }
-body.light button { color:white; }
-li { display:flex; justify-content:space-between; align-items:center; background:#262626; margin-top:10px; padding:10px; border-radius:6px; }
+.container { max-width:1000px; margin:auto; padding:20px; display:grid; grid-gap:20px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+
+/* Cards */
+.card { background:#1a1a1a; padding:20px; border-radius:15px; box-shadow:0 0 20px rgba(122,108,255,0.3); transition:0.3s; }
+body.light .card { background:#fff; color:#000; box-shadow:0 0 15px rgba(122,108,255,0.2); }
+
+/* Inputs */
+input, textarea { padding:10px; width:100%; margin:5px 0; border-radius:6px; border:none; }
+textarea { resize:none; }
+
+/* Buttons */
+button { padding:10px 15px; margin:5px; border:none; border-radius:8px; background:linear-gradient(90deg,#7a6cff,#00c6ff); color:white; cursor:pointer; transition:0.2s; }
+button:disabled { opacity:0.6; cursor:not-allowed; }
+
+/* List items */
+li { display:flex; justify-content:space-between; align-items:center; background:#262626; margin-top:10px; padding:10px; border-radius:6px; flex-wrap:wrap; }
 body.light li { background:#e0e0e0; color:#000; }
+
+/* Progress bar */
 .progress-bar { width:100%; height:20px; background:#333; border-radius:10px; overflow:hidden; margin-top:10px; }
 .fill { height:100%; width:0%; background:linear-gradient(90deg,#7a6cff,#00c6ff); transition:0.3s; }
-.status { margin-left:10px; }
-@media(max-width:600px){
-  input { width:100%; }
-  li { flex-direction:column; align-items:flex-start; }
-}
+
+/* Status */
+.status { margin-left:10px; font-weight:bold; }
+
+/* Responsive adjustments */
+@media(max-width:600px){ li { flex-direction:column; align-items:flex-start; } }
 </style>
 </head>
 <body>
-<header>CoolStudyHub Pro 🚀</header>
+
+<header>CoolStudyHub Pro v3 🚀</header>
 <div style="text-align:center;">
 <button onclick="toggleMode()">🌙 / ☀ Mode</button>
 </div>
+
 <div class="container">
-  <div class="card">
-    <h2>🎯 Today's Focus</h2>
-    <p id="date"></p>
-  </div>
 
-  <div class="card">
-    <h2>📋 Study Planner</h2>
-    <input id="task" placeholder="Task">
-    <input id="subject" placeholder="Subject">
-    <input id="time" placeholder="Hours">
-    <button onclick="addTask()">Add</button>
-    <ul id="list"></ul>
-  </div>
+<!-- Today's Focus -->
+<div class="card">
+  <h2>🎯 Today's Focus</h2>
+  <p id="date"></p>
+</div>
 
-  <div class="card">
-    <h2>📊 Progress</h2>
-    <div class="progress-bar"><div id="bar" class="fill"></div></div>
-    <p id="percent">0%</p>
-  </div>
+<!-- Study Planner -->
+<div class="card">
+  <h2>📋 Study Planner</h2>
+  <input id="task" placeholder="Task">
+  <input id="subject" placeholder="Subject">
+  <input id="time" placeholder="Hours">
+  <textarea id="notes" placeholder="Notes (optional)" rows="2"></textarea>
+  <button onclick="addTask()">Add Task</button>
+  <ul id="list"></ul>
+</div>
 
-  <div class="card">
-    <h2>🧠 Analysis</h2>
-    <p id="analysis"></p>
-  </div>
+<!-- Timer / Focus Mode -->
+<div class="card">
+  <h2>⏱ Focus Timer</h2>
+  <p>Selected Task: <span id="timerTask">None</span></p>
+  <button onclick="startTimer()">Start</button>
+  <button onclick="stopTimer()">Stop</button>
+  <button onclick="resetTimer()">Reset</button>
+  <h1 id="timer">00:00:00</h1>
+</div>
 
-  <div class="card">
-    <h2>🔥 Streak</h2>
-    <p id="streak">0 Days</p>
-  </div>
+<!-- Progress -->
+<div class="card">
+  <h2>📊 Progress</h2>
+  <div class="progress-bar"><div id="bar" class="fill"></div></div>
+  <p id="percent">0%</p>
+</div>
+
+<!-- Analysis -->
+<div class="card">
+  <h2>🧠 Analysis</h2>
+  <p id="analysis"></p>
+</div>
+
+<!-- Streak -->
+<div class="card">
+  <h2>🔥 Streak</h2>
+  <p id="streak">0 Days</p>
+</div>
+
 </div>
 
 <script>
+// Data
 let data = JSON.parse(localStorage.getItem("data")) || [];
 let streak = JSON.parse(localStorage.getItem("streak")) || 0;
 let lastDate = localStorage.getItem("lastDate") || null;
+
+// Timer
+let timer = 0, interval=null, currentTaskIndex=null;
 
 function save(){
   localStorage.setItem("data", JSON.stringify(data));
@@ -74,14 +111,16 @@ function save(){
 }
 
 function addTask(){
-  let t = document.getElementById("task").value.trim();
-  let s = document.getElementById("subject").value.trim();
-  let time = document.getElementById("time").value.trim();
+  let t=document.getElementById("task").value.trim();
+  let s=document.getElementById("subject").value.trim();
+  let time=document.getElementById("time").value.trim();
+  let notes=document.getElementById("notes").value.trim();
   if(!t||!s||!time) return alert("Task, Subject & Hours required!");
-  data.push({t,s,time:Number(time),status:"pending"});
+  data.push({t,s,time:Number(time),status:"pending",notes});
   document.getElementById("task").value='';
   document.getElementById("subject").value='';
   document.getElementById("time").value='';
+  document.getElementById("notes").value='';
   save(); render();
 }
 
@@ -117,12 +156,14 @@ function render(){
 
     let li=document.createElement("li");
     li.innerHTML=`
-      <span style="text-decoration:${d.status==='done'?'line-through':'none'}">
-        ${d.t} (${d.s} - ${d.time}h)
-      </span>
+      <div>
+        <strong>${d.t}</strong> (${d.s} - ${d.time}h)
+        <p>${d.notes}</p>
+      </div>
       <div>
         <button onclick="completeTask(${i})" ${d.status==='done'?'disabled':''}>✔</button>
         <button onclick="deleteTask(${i})">❌</button>
+        <button onclick="selectTask(${i})">⏱</button>
         <span class='status'>${d.status}</span>
       </div>
     `;
@@ -142,7 +183,6 @@ function render(){
     strong=entries[entries.length-1][0];
   }
   let subjectPercent = entries.map(e=>`${e[0]}: ${Math.round(e[1]/totalTime*100)}%`).join(' | ');
-
   document.getElementById("analysis").innerText =
     `Total Study: ${totalTime} hrs | Weak: ${weak} | Strong: ${strong} | ${subjectPercent}`;
 
@@ -153,7 +193,39 @@ function setDate(){
   document.getElementById("date").innerText = new Date().toDateString();
 }
 
-// Dark/Light mode toggle
+// Timer functions
+function selectTask(i){
+  currentTaskIndex=i;
+  document.getElementById("timerTask").innerText = data[i].t;
+  resetTimer();
+}
+
+function startTimer(){
+  if(currentTaskIndex===null) return alert("Select a task first ⏱");
+  if(interval) return;
+  interval=setInterval(()=>{
+    timer++;
+    document.getElementById("timer").innerText = formatTime(timer);
+  },1000);
+}
+
+function stopTimer(){
+  clearInterval(interval);
+  interval=null;
+}
+
+function resetTimer(){
+  stopTimer();
+  timer=0;
+  document.getElementById("timer").innerText = formatTime(timer);
+}
+
+function formatTime(t){
+  let h=Math.floor(t/3600), m=Math.floor((t%3600)/60), s=t%60;
+  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+// Dark/Light mode
 function toggleMode(){
   document.body.classList.toggle("light");
 }
